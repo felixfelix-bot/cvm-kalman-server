@@ -125,14 +125,14 @@ function getDashboardData() {
       GROUP BY hour_ts, key_name ORDER BY hour_ts ASC
     `, [weekAgo]);
 
-    // Model decisions timeline (7d)
+    // Model decisions timeline (7d) — from key_decisions table
     let decisions = [];
     try {
       decisions = queryAll(db, `
-        SELECT CAST(ts/3600 AS INTEGER)*3600 as hour_ts, model, tier, reason,
-          count(*) as count, sum(CASE WHEN peak=1 THEN 1 ELSE 0 END) as peak_count
-        FROM model_decisions WHERE ts > ?
-        GROUP BY hour_ts, model, tier, reason ORDER BY hour_ts ASC
+        SELECT CAST(ts/3600 AS INTEGER)*3600 as hour_ts, chosen_key as key, reason,
+          count(*) as count
+        FROM key_decisions WHERE ts > ?
+        GROUP BY hour_ts, chosen_key, reason ORDER BY hour_ts ASC
       `, [weekAgo]);
     } catch {}
 
@@ -212,11 +212,9 @@ function getDashboardData() {
       decisions: decisions.map(d => ({
         ts: d.hour_ts,
         iso: new Date(d.hour_ts * 1000).toISOString(),
-        model: d.model,
-        tier: d.tier,
+        key: d.key,
         reason: d.reason,
         count: d.count,
-        peak: d.peak_count,
       })),
       transitions: transitions.map(t => ({
         ts: t.ts,

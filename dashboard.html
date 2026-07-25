@@ -189,6 +189,10 @@ function renderUsageChart(data) {
 
 function renderCostChart(data) {
   const costs = data.costs.by_key.filter(c => c.total_usd > 0);
+  if (costs.length === 0) {
+    document.getElementById('chart-cost').innerHTML = '<div class="loading">No cost data</div>';
+    return;
+  }
   Plotly.newPlot('chart-cost', [{
     x: costs.map(c => c.key),
     y: costs.map(c => c.total_usd),
@@ -199,12 +203,17 @@ function renderCostChart(data) {
     hoverinfo: 'text',
   }], {
     ...layoutBase,
+    xaxis: { type: 'category', gridcolor: '#21262d', showgrid: true },
     yaxis: { ...layoutBase.yaxis, title: 'USD' },
     showlegend: false,
   }, { responsive: true });
 }
 
 function renderCallsChart(data) {
+  if (!data.usage_by_key || data.usage_by_key.length === 0) {
+    document.getElementById('chart-calls').innerHTML = '<div class="loading">No usage data</div>';
+    return;
+  }
   Plotly.newPlot('chart-calls', [{
     x: data.usage_by_key.map(k => k.key),
     y: data.usage_by_key.map(k => k.calls),
@@ -215,6 +224,7 @@ function renderCallsChart(data) {
     hoverinfo: 'text',
   }], {
     ...layoutBase,
+    xaxis: { type: 'category', gridcolor: '#21262d', showgrid: true },
     yaxis: { ...layoutBase.yaxis, title: 'Calls' },
     showlegend: false,
   }, { responsive: true });
@@ -268,6 +278,7 @@ function renderSystemChart(data) {
     hoverinfo: 'text',
   }], {
     ...layoutBase,
+    xaxis: { type: 'category', gridcolor: '#21262d', showgrid: true },
     yaxis: { ...layoutBase.yaxis, title: '%', range: [0, 100] },
     showlegend: false,
   }, { responsive: true });
@@ -281,11 +292,10 @@ function renderDecisions(data) {
   }
   const recent = data.decisions.slice(-15).reverse();
   el.innerHTML = `<table>
-    <tr><th>Time</th><th>Model</th><th>Tier</th><th>Reason</th><th>Cnt</th></tr>
+    <tr><th>Time</th><th>Key</th><th>Reason</th><th>Cnt</th></tr>
     ${recent.map(d => `<tr>
       <td>${new Date(d.iso).toLocaleString()}</td>
-      <td>${d.model}</td>
-      <td>${d.tier}</td>
+      <td class="key-${d.key}">${d.key}</td>
       <td style="font-size:11px;">${d.reason || ''}</td>
       <td>${d.count}</td>
     </tr>`).join('')}
