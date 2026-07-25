@@ -1,0 +1,16 @@
+[Unit]
+Description=ContextVM Kalman Data Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/c03rad0r/repos/cvm-kalman-server
+ExecStart=/usr/bin/npx tsx --experimental-sqlite /home/c03rad0r/repos/cvm-kalman-server/server.ts
+Restart=always
+RestartSec=10
+Environment=NODE_OPTIONS=--experimental-sqlite
+StandardOutput=journal
+
+[Install]
+WantedBy=default.target
