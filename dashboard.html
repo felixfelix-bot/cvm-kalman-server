@@ -103,6 +103,11 @@
     <div id="chart-system" style="height:250px;"></div>
   </div>
 
+  <div class="chart-container full">
+    <h3>🔑 Key Decisions Timeline — when which key was chosen and why</h3>
+    <div id="chart-key-decisions" style="height:350px;"></div>
+  </div>
+
   <div class="chart-container">
     <h3>📋 Model Decisions (recent)</h3>
     <div id="decisions-table"></div>
@@ -311,6 +316,61 @@ function clearError() {
   document.getElementById('error-box').innerHTML = '';
 }
 
+function renderKeyDecisionsTimeline(data) {
+  const el = document.getElementById('chart-key-decisions');
+  if (!data.transitions || data.transitions.length === 0) {
+    el.innerHTML = '<div class="loading">No key decision data</div>';
+    return;
+  }
+
+  // Build a timeline: x-axis = time, y-axis = key name, color by key
+  // Each transition is a point showing which key was chosen and why
+  const trans = data.transitions.slice().reverse(); // chronological order
+  const keys = [...new Set(trans.map(t => t.key))].filter(k => k && k !== 'null');
+
+  // Build scatter trace per key
+  const traces = keys.map(key => {
+    const points = trans.filter(t => t.key === key);
+    return {
+      x: points.map(p => p.iso),
+      y: points.map(() => key),
+      mode: 'markers',
+      marker: {
+        color: KEY_COLORS[key] || '#8b949e',
+        size: 10,
+        line: { width: 1, color: '#0d1117' },
+      },
+      name: key,
+      text: points.map(p => p.reason || ''),
+      hovertemplate: '<b>%{y}</b><br>%{x}<br>%{text}<extra></extra>',
+    };
+  });
+
+  // Also add a line connecting transitions to show sequence
+  if (trans.length > 1) {
+    traces.push({
+      x: trans.map(t => t.iso),
+      y: trans.map(t => t.key),
+      mode: 'lines',
+      line: { color: '#30363d', width: 1, dash: 'dot' },
+      showlegend: false,
+      hoverinfo: 'skip',
+    });
+  }
+
+  Plotly.newPlot('chart-key-decisions', traces, {
+    ...layoutBase,
+    xaxis: { ...layoutBase.xaxis, title: 'Time' },
+    yaxis: {
+      gridcolor: '#21262d', showgrid: true,
+      title: 'API Key',
+      categoryorder: 'array',
+      categoryarray: ['friend', 'ours', 'ollama_cloud', 'ppq', 'openrouter'],
+    },
+    margin: { t: 10, r: 20, b: 50, l: 100 },
+  }, { responsive: true });
+}
+
 async function refresh() {
   try {
     const data = await fetchData();
@@ -321,6 +381,7 @@ async function refresh() {
     renderCallsChart(data);
     renderKalmanChart(data);
     renderSystemChart(data);
+    renderKeyDecisionsTimeline(data);
     renderDecisions(data);
     renderTransitions(data);
     document.getElementById('last-update').textContent = `Updated: ${new Date().toLocaleTimeString()}`;
