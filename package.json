@@ -1,7 +1,7 @@
 {
   "name": "cvm-kalman-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "ContextVM data server + live dashboard: LLM usage analytics and Kalman burn-rate convergence over MCP-on-Nostr",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

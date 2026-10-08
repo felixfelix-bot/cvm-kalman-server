@@ -1,3 +1,55 @@
+# cvm-kalman-server
+
+A [ContextVM](https://www.contextvm.org/) (CVM) **data server with its own live
+dashboard**: exposes LLM usage analytics and Kalman burn-rate convergence data
+as MCP tools over Nostr, and serves an HTML dashboard plus a small JSON API.
+
+This is a *data* server, not a service-kit service — it publishes real
+telemetry (usage DB, burn DB, live system stats) rather than a payable tool
+contract.
+
+## What is in here
+
+| File | Role |
+|---|---|
+| `server.ts` | The ContextVM data server (`npx tsx server.ts`). MCP-on-Nostr via `@contextvm/sdk`. |
+| `dashboard-server.mjs` | HTTP server (port 3001): serves the dashboard HTML and its JSON API, reading the SQLite DBs directly. |
+| `dashboard-api.mjs` | API helpers for the dashboard server. |
+| `dashboard.html` | The live dashboard UI (Plotly charts). |
+| `sdk-entry.mjs` | Browser shim exporting `@contextvm/sdk` bits for the dashboard. |
+| `test-cvm-tools.mjs`, `test-cvm-client.mjs` | Manual CVM transport/tool smoke tests. |
+| `record-final-video.py` | Records the dashboard to video for evidence. |
+| `cvm-kalman-server.service` | systemd **user** unit definition. |
+
+## Tools exposed (CVM / MCP)
+
+`get_usage_summary`, `get_model_decisions`, `get_kalman_status`,
+`get_cost_breakdown`, `get_quota_windows`, `get_key_transitions`,
+`get_system_stats`, `get_provider_balances` — see the header comment of
+`server.ts` for the authoritative list.
+
+## Configuration (environment)
+
+| Var | Meaning |
+|---|---|
+| `CVM_SERVER_NSEC` | Server Nostr private key (nsec or hex). If unset, read from `CVM_SERVER_KEY_FILE`. |
+| `CVM_SERVER_KEY_FILE` | Path to a file holding the hex private key. |
+| `ZAI_USAGE_DB` | Path to the usage SQLite DB. |
+| `PORT` | Dashboard server port (default 3001). |
+
+## Run
+
+```bash
+npm install
+npx tsx server.ts            # the CVM data server
+node dashboard-server.mjs    # dashboard + API on :3001
+```
+
+Deployed on the operator workstation as a systemd user unit
+(`cvm-kalman-server.service`).
+
+---
+
 
 ## Mirror, CI and releases on Nostr (ngit)
 
