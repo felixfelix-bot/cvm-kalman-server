@@ -1,3 +1,12 @@
+# MOVED
+
+This repository has moved to **https://github.com/cvm-services/cvm-kalman-server**.
+
+This copy is retired (archived, read-only). All branches and tags were mirrored
+1:1 to the new home on 2026-10-08 (master `99f52e1`, tag `backup/github-master` @ `9e3ad0d`).
+
+---
+
 # cvm-kalman-server
 
 A [ContextVM](https://www.contextvm.org/) (CVM) **data server with its own live
